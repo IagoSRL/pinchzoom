@@ -50,14 +50,13 @@
             this.update();
             // default enable.
             this.enable();
-
-        },
-            sum = function (a, b) {
-                return a + b;
-            },
-            isCloseTo = function (value, expected) {
-                return value > expected - 0.01 && value < expected + 0.01;
-            };
+        };
+        var sum = function (a, b) {
+            return a + b;
+        };
+        var isCloseTo = function (value, expected) {
+            return value > expected - 0.01 && value < expected + 0.01;
+        };
 
         PinchZoom.prototype = {
 
