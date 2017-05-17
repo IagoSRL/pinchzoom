@@ -526,8 +526,8 @@
             bindEvents: function () {
                 detectGestures(this.container.get(0), this);
                 // Zepto and jQuery both know about `on`
-                $(window).on('resize', this.update.bind(this));
-                $(this.el).find('img').on('load', this.update.bind(this));
+                $(window).on('resize.pinchzoom', this.update.bind(this));
+                $(this.el).find('img').on('load.pinchzoom', this.update.bind(this));
             },
 
             /**
