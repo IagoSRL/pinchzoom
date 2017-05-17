@@ -69,6 +69,7 @@
                 minZoom: 0.5,
                 lockDragAxis: false,
                 use2d: true,
+                container: null,
                 zoomStartEventName: 'pz_zoomstart',
                 zoomEndEventName: 'pz_zoomend',
                 dragStartEventName: 'pz_dragstart',
@@ -488,14 +489,18 @@
              * Creates the expected html structure
              */
             setupMarkup: function () {
-                this.container = $('<div class="pinch-zoom-container"></div>');
-                this.el.before(this.container);
-                this.container.append(this.el);
-
+                if( this.options.container ) {
+                    this.container = $( this.options.container );
+                } else {
+                    this.container = $('<div class="pinch-zoom-container"></div>');
+                    this.el.before(this.container);
+                    this.container.append(this.el);
+                }
                 this.container.css({
                     'overflow': 'hidden',
                     'position': 'relative'
                 });
+
 
                 // Zepto doesn't recognize `webkitTransform..` style
                 this.el.css({
