@@ -37,21 +37,21 @@
          * @constructor
          */
         var PinchZoom = function (el, options) {
-                this.el = $(el);
-                this.zoomFactor = 1;
-                this.lastScale = 1;
-                this.offset = {
-                    x: 0,
-                    y: 0
-                };
-                this.options = $.extend({}, this.defaults, options);
-                this.setupMarkup();
-                this.bindEvents();
-                this.update();
-                // default enable.
-                this.enable();
+            this.el = $(el);
+            this.zoomFactor = 1;
+            this.lastScale = 1;
+            this.offset = {
+                x: 0,
+                y: 0
+            };
+            this.options = $.extend({}, this.defaults, options);
+            this.setupMarkup();
+            this.bindEvents();
+            this.update();
+            // default enable.
+            this.enable();
 
-            },
+        },
             sum = function (a, b) {
                 return a + b;
             },
@@ -232,27 +232,27 @@
              */
             drag: function (center, lastCenter) {
                 if (lastCenter) {
-                  if(this.options.lockDragAxis) {
-                    // lock scroll to position that was changed the most
-                    if(Math.abs(center.x - lastCenter.x) > Math.abs(center.y - lastCenter.y)) {
-                      this.addOffset({
-                        x: -(center.x - lastCenter.x),
-                        y: 0
-                      });
+                    if (this.options.lockDragAxis) {
+                        // lock scroll to position that was changed the most
+                        if (Math.abs(center.x - lastCenter.x) > Math.abs(center.y - lastCenter.y)) {
+                            this.addOffset({
+                                x: -(center.x - lastCenter.x),
+                                y: 0
+                            });
+                        }
+                        else {
+                            this.addOffset({
+                                y: -(center.y - lastCenter.y),
+                                x: 0
+                            });
+                        }
                     }
                     else {
-                      this.addOffset({
-                        y: -(center.y - lastCenter.y),
-                        x: 0
-                      });
+                        this.addOffset({
+                            y: -(center.y - lastCenter.y),
+                            x: -(center.x - lastCenter.x)
+                        });
                     }
-                  }
-                  else {
-                    this.addOffset({
-                      y: -(center.y - lastCenter.y),
-                      x: -(center.x - lastCenter.x)
-                    });
-                  }
                 }
             },
 
@@ -383,14 +383,14 @@
                 // uses following formula to calculate the zoom center x value
                 // offset_left / offset_right = zoomcenter_x / (container_x - zoomcenter_x)
                 var length = this.container[0].offsetWidth * this.zoomFactor,
-                    offsetLeft  = this.offset.x,
-                    offsetRight = length - offsetLeft -this.container[0].offsetWidth,
+                    offsetLeft = this.offset.x,
+                    offsetRight = length - offsetLeft - this.container[0].offsetWidth,
                     widthOffsetRatio = offsetLeft / offsetRight,
                     centerX = widthOffsetRatio * this.container[0].offsetWidth / (widthOffsetRatio + 1),
 
-                // the same for the zoomcenter y
+                    // the same for the zoomcenter y
                     height = this.container[0].offsetHeight * this.zoomFactor,
-                    offsetTop  = this.offset.y,
+                    offsetTop = this.offset.y,
                     offsetBottom = height - offsetTop - this.container[0].offsetHeight,
                     heightOffsetRatio = offsetTop / offsetBottom,
                     centerY = heightOffsetRatio * this.container[0].offsetHeight / (heightOffsetRatio + 1);
@@ -472,7 +472,7 @@
              * @return {Number}
              */
             swing: function (p) {
-                return -Math.cos(p * Math.PI) / 2  + 0.5;
+                return -Math.cos(p * Math.PI) / 2 + 0.5;
             },
 
             getContainerX: function () {
@@ -491,8 +491,8 @@
              * Creates the expected html structure
              */
             setupMarkup: function () {
-                if( this.options.container ) {
-                    this.container = $( this.options.container );
+                if (this.options.container) {
+                    this.container = $(this.options.container);
                 } else {
                     this.container = $('<div class="pinch-zoom-container"></div>');
                     this.el.before(this.container);
@@ -543,19 +543,19 @@
 
                 setTimeout((function () {
                     this.updatePlaned = false;
-                    if(this.options.containerHeight){
-                      this.setContainerY(this.options.containerHeight);
-                    }else {
-                      this.updateAspectRatio();
+                    if (this.options.containerHeight) {
+                        this.setContainerY(this.options.containerHeight);
+                    } else {
+                        this.updateAspectRatio();
                     }
 
                     var zoomFactor = this.getInitialZoomFactor() * this.zoomFactor,
                         offsetX = -this.offset.x / zoomFactor,
                         offsetY = -this.offset.y / zoomFactor,
-                        transform3d =   'scale3d('     + zoomFactor + ', '  + zoomFactor + ',1) ' +
-                            'translate3d(' + offsetX    + 'px,' + offsetY    + 'px,0px)',
-                        transform2d =   'scale('       + zoomFactor + ', '  + zoomFactor + ') ' +
-                            'translate('   + offsetX    + 'px,' + offsetY    + 'px)',
+                        transform3d = 'scale3d(' + zoomFactor + ', ' + zoomFactor + ',1) ' +
+                            'translate3d(' + offsetX + 'px,' + offsetY + 'px,0px)',
+                        transform2d = 'scale(' + zoomFactor + ', ' + zoomFactor + ') ' +
+                            'translate(' + offsetX + 'px,' + offsetY + 'px)',
                         removeClone = (function () {
                             if (this.clone) {
                                 this.clone.remove();
@@ -571,11 +571,11 @@
                         this.is3d = true;
                         removeClone();
                         this.el.css({
-                            '-webkit-transform':  transform3d,
-                            '-o-transform':       transform2d,
-                            '-ms-transform':      transform2d,
-                            '-moz-transform':     transform2d,
-                            'transform':        transform3d
+                            '-webkit-transform': transform3d,
+                            '-o-transform': transform2d,
+                            '-ms-transform': transform2d,
+                            '-moz-transform': transform2d,
+                            'transform': transform3d
                         });
                     } else {
 
@@ -589,11 +589,11 @@
                             setTimeout(removeClone, 200);
                         }
                         this.el.css({
-                            '-webkit-transform':  transform2d,
-                            '-o-transform':       transform2d,
-                            '-ms-transform':      transform2d,
-                            '-moz-transform':     transform2d,
-                            'transform':        transform2d
+                            '-webkit-transform': transform2d,
+                            '-o-transform': transform2d,
+                            '-ms-transform': transform2d,
+                            '-moz-transform': transform2d,
+                            'transform': transform2d
                         });
                         this.is3d = false;
                     }
@@ -603,15 +603,15 @@
             /**
              * Enables event handling for gestures
              */
-            enable: function() {
-              this.enabled = true;
+            enable: function () {
+                this.enabled = true;
             },
 
             /**
              * Disables event handling for gestures
              */
-            disable: function() {
-              this.enabled = false;
+            disable: function () {
+                this.enabled = false;
             }
         };
 
@@ -712,7 +712,7 @@
                 firstMove = true;
 
             el.addEventListener('touchstart', function (event) {
-                if(target.enabled) {
+                if (target.enabled) {
                     firstMove = true;
                     fingers = event.touches.length;
                     detectDoubleTap(event);
@@ -720,7 +720,7 @@
             });
 
             el.addEventListener('touchmove', function (event) {
-                if(target.enabled) {
+                if (target.enabled) {
                     if (firstMove) {
                         updateInteraction(event);
                         if (interaction
@@ -739,12 +739,11 @@
                         }
 
                         if (interaction
-                             || target.options.cancelNonInteractionEvents) {
-	                            cancelEvent(event);
+                            || target.options.cancelNonInteractionEvents) {
+                            cancelEvent(event);
                         }
 
-                        if(interaction)
-                        {
+                        if (interaction) {
                             target.update();
                         }
                     }
@@ -754,82 +753,76 @@
             });
 
             el.addEventListener('touchend', function (event) {
-                if(target.enabled) {
+                if (target.enabled) {
                     fingers = event.touches.length;
                     updateInteraction(event);
                 }
             });
 
-			var wheelTravel = 1;
-			el.addEventListener('mousewheel', function (event) {
-				if(!target.enabled)
-					return;
+            var wheelTravel = 1;
+            el.addEventListener('mousewheel', function (event) {
+                if (!target.enabled)
+                    return;
 
-				var delta = Math.max(-1, Math.min(1, (event.wheelDelta || -event.detail)));
+                var delta = Math.max(-1, Math.min(1, (event.wheelDelta || -event.detail)));
 
-				wheelTravel += delta;
-				if(wheelTravel < 2)
-				{
-					wheelTravel = 1;
-					target.zoomOutAnimation();
-				}
-				else
-				{
-					// TODO: the center here isn't quite right;
-					// hopefully original author has better idea
-					// of what it should be.
-					target.scale(wheelTravel, { x: event.offsetX, y: event.offsetY });
-				}
+                wheelTravel += delta;
+                if (wheelTravel < 2) {
+                    wheelTravel = 1;
+                    target.zoomOutAnimation();
+                }
+                else {
+                    // TODO: the center here isn't quite right;
+                    // hopefully original author has better idea
+                    // of what it should be.
+                    target.scale(wheelTravel, { x: event.offsetX, y: event.offsetY });
+                }
 
-				target.update();
-				cancelEvent(event);
-			});
+                target.update();
+                cancelEvent(event);
+            });
 
-			var mousePos = {};
-			el.addEventListener('mousedown', function(event) {
-				if(!target.enabled)
-					return;
+            var mousePos = {};
+            el.addEventListener('mousedown', function (event) {
+                if (!target.enabled)
+                    return;
 
-				if(!target.canDrag())
-					return;
+                if (!target.canDrag())
+                    return;
 
-				mousePos.x = event.pageX;
-				mousePos.y = event.pageY;
+                mousePos.x = event.pageX;
+                mousePos.y = event.pageY;
 
-				var moved = function(event)
-				{
-					mousePos.x = event.pageX;
-					mousePos.y = event.pageY;
-					el.removeEventListener('mousemove', moved);
-					cancelEvent(event);
-				};
-				el.addEventListener('mousemove', moved);
+                var moved = function (event) {
+                    mousePos.x = event.pageX;
+                    mousePos.y = event.pageY;
+                    el.removeEventListener('mousemove', moved);
+                    cancelEvent(event);
+                };
+                el.addEventListener('mousemove', moved);
 
-				var upd = function(event)
-				{
-					if(mousePos.x == event.pageX
-						&& mousePos.y == event.pageY)
-					{
-						// mouse click.
-					}
-					else
-					{
-						var offset = {
-							x: (mousePos.x - event.pageX),
-							y: (mousePos.y - event.pageY)
-						}
+                var upd = function (event) {
+                    if (mousePos.x == event.pageX
+                        && mousePos.y == event.pageY) {
+                        // mouse click.
+                    }
+                    else {
+                        var offset = {
+                            x: (mousePos.x - event.pageX),
+                            y: (mousePos.y - event.pageY)
+                        }
 
-						target.addOffset(offset);
-						target.update();
-					}
+                        target.addOffset(offset);
+                        target.update();
+                    }
 
-					el.removeEventListener('mouseup', upd);
-					cancelEvent(event);
-				};
-				el.addEventListener('mouseup', upd);
+                    el.removeEventListener('mouseup', upd);
+                    cancelEvent(event);
+                };
+                el.addEventListener('mouseup', upd);
 
-				cancelEvent(event);
-			});
+                cancelEvent(event);
+            });
         };
 
         return PinchZoom;
@@ -844,19 +837,16 @@
         window.RTP.PinchZoom = definePinchZoom(window.$);
     }
 
-	// provide a standard jQuery hook point
-	(function($)
-	{
-		$.fn.pinchzoom = function(options)
-		{
-			options = options || {};
+    // provide a standard jQuery hook point
+    (function ($) {
+        $.fn.pinchzoom = function (options) {
+            options = options || {};
 
-			// so we can be chained
-			//@see http://docs.jquery.com/Plugins/Authoring
-			return this.each(function()
-			{
-				new RTP.PinchZoom(this, options);
-			});
-		};
-	})(jQuery);
+            // so we can be chained
+            //@see http://docs.jquery.com/Plugins/Authoring
+            return this.each(function () {
+                new RTP.PinchZoom(this, options);
+            });
+        };
+    })(jQuery);
 }).call(this);
