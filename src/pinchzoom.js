@@ -70,6 +70,7 @@
                 lockDragAxis: false,
                 use2d: true,
                 container: null,
+                containerHeight: false,
                 zoomStartEventName: 'pz_zoomstart',
                 zoomEndEventName: 'pz_zoomend',
                 dragStartEventName: 'pz_dragstart',
@@ -542,7 +543,11 @@
 
                 setTimeout((function () {
                     this.updatePlaned = false;
-                    this.updateAspectRatio();
+                    if(this.options.containerHeight){
+                      this.setContainerY(this.options.containerHeight);
+                    }else {
+                      this.updateAspectRatio();
+                    }
 
                     var zoomFactor = this.getInitialZoomFactor() * this.zoomFactor,
                         offsetX = -this.offset.x / zoomFactor,
@@ -805,7 +810,7 @@
 					if(mousePos.x == event.pageX
 						&& mousePos.y == event.pageY)
 					{
-						// mouse click. 
+						// mouse click.
 					}
 					else
 					{
@@ -850,7 +855,7 @@
 			//@see http://docs.jquery.com/Plugins/Authoring
 			return this.each(function()
 			{
-				new RTP.PinchZoom(this, options);	
+				new RTP.PinchZoom(this, options);
 			});
 		};
 	})(jQuery);

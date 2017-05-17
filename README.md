@@ -31,6 +31,7 @@ maxZoom:            The maximum zoom factor. (default 4)
 minZoom:            The minimum zoom factor. (default 0.5)
 lockDragAxis        Locks panning of the element to a single axis. (default false)
 cancelNonInteractionEvents:	Kills touchmove event propagation when zoomed out. (default false)
+containerHeight     The height of pinch-zoom-container, default is the height of the inner image
 
 ```
 
