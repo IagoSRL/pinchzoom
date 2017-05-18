@@ -494,8 +494,7 @@
                     this.container = $(this.options.container);
                 } else {
                     this.container = $('<div class="pinch-zoom-container"></div>');
-                    this.el.before(this.container);
-                    this.container.append(this.el);
+                    this.el.wrap(this.container);
                 }
                 this.container.css({
                     'overflow': 'hidden',
