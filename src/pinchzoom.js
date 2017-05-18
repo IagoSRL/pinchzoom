@@ -45,6 +45,18 @@
                 y: 0
             };
             this.options = $.extend({}, this.defaults, options);
+            /**
+             * Keep track of latest timeout ID created at update method
+             * to allow for clean-up at 'destroy'
+             * @private
+             */
+            this._updateTimeout = null;
+            /**
+             * Keep instance returned by 'detectGestures' that allows
+             * cancelation, to allow for clean-up at 'destroy'
+             * @private
+             */
+            this._gesturesDetection = null;
             this.setupMarkup();
             this.bindEvents();
             this.update();
@@ -490,6 +502,7 @@
              * Creates the expected html structure
              */
             setupMarkup: function () {
+                // IMPORTANT: Keep _destroySetupMarkup in sync with changes here
                 if (this.options.container) {
                     this.container = $(this.options.container);
                 } else {
@@ -501,7 +514,6 @@
                     'position': 'relative'
                 });
 
-
                 // Zepto doesn't recognize `webkitTransform..` style
                 this.el.css({
                     '-webkit-transform-origin': '0% 0%',
@@ -510,6 +522,42 @@
                     '-o-transform-origin': '0% 0%',
                     'transform-origin': '0% 0%',
                     'position': 'absolute'
+                });
+            },
+
+            /**
+             * Inverse of 'setupMarkup'.
+             * It means for use as part of 'destroy'
+             * @private
+             */
+            _destroySetupMarkup: function () {
+                if (this.options.container) {
+                    // Remove custom CSS added to the container
+                    this.container.css({
+                        overflow: '',
+                        position: ''
+                    });
+                }
+                else {
+                    // Remove container from DOM, keeping 'el' in place
+                    this.el.unwrap();
+                }
+
+                // Remove custom CSS from the element
+                this.el.css({
+                    // From setupMarkup
+                    '-webkit-transform-origin': '',
+                    '-moz-transform-origin': '',
+                    '-ms-transform-origin': '',
+                    '-o-transform-origin': '',
+                    'transform-origin': '',
+                    'position': '',
+                    // From update
+                    '-webkit-transform': '',
+                    '-o-transform': '',
+                    '-ms-transform': '',
+                    '-moz-transform': '',
+                    'transform': ''
                 });
             },
 
@@ -523,10 +571,25 @@
              * Binds all required event listeners
              */
             bindEvents: function () {
-                detectGestures(this.container.get(0), this);
+                this._gesturesDetection = detectGestures(this.container.get(0), this);
                 // Zepto and jQuery both know about `on`
                 $(window).on('resize.pinchzoom', this.update.bind(this));
                 $(this.el).find('img').on('load.pinchzoom', this.update.bind(this));
+            },
+
+            /**
+             * Unbinds all event listeners.
+             * Be carefull with calling this, what you may want usually
+             * is to call 'destroy' to remove the PinchZoom instance
+             */
+            unbindEvents: function () {
+                // Cancel gestures detection
+                if (this._gesturesDetection) {
+                    this._gesturesDetection.cancel();
+                }
+                // Cancel auto update on resize and load
+                $(window).off('resize.pinchzoom');
+                $(this.el).find('img').off('load.pinchzoom');
             },
 
             /**
@@ -539,7 +602,7 @@
                 }
                 this.updatePlaned = true;
 
-                setTimeout((function () {
+                this._updateTimeout = setTimeout((function () {
                     this.updatePlaned = false;
                     if (this.options.containerHeight) {
                         this.setContainerY(this.options.containerHeight);
@@ -560,6 +623,9 @@
                                 delete this.clone;
                             }
                         }).bind(this);
+
+                    // IMPORTANT: Keep changes here to '.css' in sync at _destroySetupMarkup
+                    // so any value set here is reset there.
 
                     // Scale 3d and translate3d are faster (at least on ios)
                     // but they also reduce the quality.
@@ -584,7 +650,7 @@
                             this.clone = this.el.clone();
                             this.clone.css('pointer-events', 'none');
                             this.clone.appendTo(this.container);
-                            setTimeout(removeClone, 200);
+                            this._updateTimeout = setTimeout(removeClone, 200);
                         }
                         this.el.css({
                             '-webkit-transform': transform2d,
@@ -610,14 +676,69 @@
              */
             disable: function () {
                 this.enabled = false;
+            },
+
+            /**
+             * It removes the PinchZoom instance while keeping the
+             * DOM element.
+             */
+            destroy: function () {
+                this.disable();
+                this.stopAnimation();
+                clearTimeout(this._updateTimeout);
+                this._updateTimeout = null;
+                this._destroySetupMarkup();
+                this.unbindEvents();
             }
         };
 
+        /**
+         * Enable detection of gestures in the element triggering actions
+         * in the target.
+         * @param {DOMElement} el
+         * @param {PinchZoom} target
+         * @returns {object} Object with a cancel method that allows to
+         * cancel all the detection of gestures. A new call to 'detectGestures'
+         * will be needed after call 'cancel' to re-enable.
+         */
         var detectGestures = function (el, target) {
             var interaction = null,
                 fingers = 0,
                 lastTouchStart = null,
                 startTouches = null,
+                /**
+                 * List of event listeners registered
+                 */
+                eventListeners = [],
+
+                /**
+                 * Add an event listener to the element (el),
+                 * and is registered to allow for removal if needed.
+                 * @returns {object} The 'remove' method allow to remove
+                 * the listener
+                 */
+                addEvent = function (eventName, handler) {
+                    el.addEventListener(eventName, handler);
+                    var ev = {
+                        remove: function () { el.removeEventListener(eventName, handler); }
+                    };
+                    eventListeners.push(ev);
+                    return ev;
+                },
+
+                /**
+                 * Remove all registered event listeners,
+                 * effectively cancelling the detection of gestures
+                 */
+                removeEventListeners = function () {
+                    eventListeners.forEach(function (ev) {
+                        if (ev && ev.remove) {
+                            ev.remove();
+                        }
+                    });
+                    // clear obsolete list
+                    eventListeners = [];
+                },
 
                 setInteraction = function (newInteraction, event) {
                     if (interaction !== newInteraction) {
@@ -709,7 +830,7 @@
                 },
                 firstMove = true;
 
-            el.addEventListener('touchstart', function (event) {
+            addEvent('touchstart', function (event) {
                 if (target.enabled) {
                     firstMove = true;
                     fingers = event.touches.length;
@@ -717,7 +838,7 @@
                 }
             });
 
-            el.addEventListener('touchmove', function (event) {
+            addEvent('touchmove', function (event) {
                 if (target.enabled) {
                     if (firstMove) {
                         updateInteraction(event);
@@ -750,7 +871,7 @@
                 }
             });
 
-            el.addEventListener('touchend', function (event) {
+            addEvent('touchend', function (event) {
                 if (target.enabled) {
                     fingers = event.touches.length;
                     updateInteraction(event);
@@ -758,7 +879,7 @@
             });
 
             var wheelTravel = 1;
-            el.addEventListener('mousewheel', function (event) {
+            addEvent('mousewheel', function (event) {
                 if (!target.enabled)
                     return;
 
@@ -781,7 +902,7 @@
             });
 
             var mousePos = {};
-            el.addEventListener('mousedown', function (event) {
+            addEvent('mousedown', function (event) {
                 if (!target.enabled)
                     return;
 
@@ -797,7 +918,7 @@
                     el.removeEventListener('mousemove', moved);
                     cancelEvent(event);
                 };
-                el.addEventListener('mousemove', moved);
+                addEvent('mousemove', moved);
 
                 var upd = function (event) {
                     if (mousePos.x == event.pageX
@@ -817,10 +938,14 @@
                     el.removeEventListener('mouseup', upd);
                     cancelEvent(event);
                 };
-                el.addEventListener('mouseup', upd);
+                addEvent('mouseup', upd);
 
                 cancelEvent(event);
             });
+
+            return {
+                cancel: removeEventListeners
+            };
         };
 
         return PinchZoom;
